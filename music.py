@@ -102,17 +102,21 @@ def download():
     url = link_var.get()
     yt = YouTube(url)
     video = yt.streams.filter(only_audio=True).first()
-    video.download("media")
-    print("Downloaded "+yt.title+" to media folder")
-    filename = os.listdir("media")
+    download_path = os.path.join(dir_path)
+    os.makedirs(download_path, exist_ok=True)
+    video.download(download_path)
+    print("Downloaded "+yt.title+" to ",download_path)
+    filename = os.listdir(download_path)
     for name in filename:
         if name.endswith(".mp4"):
-            audio = AudioFileClip("media/"+name)
+            audio = AudioFileClip(f"{download_path}/{name}")
             nameNomp4 = name.replace(".mp4", "")
-            audio.write_audiofile("media/"+nameNomp4+".mp3")
-            os.remove("media/"+name)
+            audio.write_audiofile(f"{download_path}/"+nameNomp4+".mp3")
+            os.remove(f"{download_path}/"+name)
             return nameNomp4+".mp3"
     print("Converted to mp3")
+    for plik in playlista:
+        trv.insert("", tk.END, values=plik)
 
 
 trv = ttk.Treeview(

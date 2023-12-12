@@ -1,6 +1,6 @@
 import customtkinter as tk
 from tkinter import ttk, filedialog
-from tkinter.messagebox import showinfo
+from tkinter import messagebox as msg
 import pygame
 import os
 
@@ -18,19 +18,38 @@ columns = "utwor"
 pygame.mixer.init()
 pygame.display.init()
 
-
-dir_path = filedialog.askdirectory(title="Wybierz folder")
 playlista = []
 
-os.chdir(dir_path)
-dir_list = os.listdir(dir_path)
-files = 0
-while files < len(os.listdir(dir_path)):
-    if dir_list[files].lower().endswith(".mp3"):
-        playlista.append(dir_list[files])
-    else:
-        print(f"nie obsługiwany plik {dir_list[files]}")
-    files += 1
+
+MUSIC_END = pygame.USEREVENT
+
+
+def wybierz_folder():
+    pygame.mixer.music.stop()
+    pygame.mixer.music.unload()
+    buton.configure(text="►", command=zagraj)
+    dir_path = filedialog.askdirectory(title="Wybierz folder")
+    for plik in trv.get_children():
+        trv.delete(plik)
+    playlista.clear()
+    os.chdir(dir_path)
+    dir_list = os.listdir(dir_path)
+    files = 0
+    while files < len(os.listdir(dir_path)):
+        if dir_list[files].lower().endswith(".mp3"):
+            playlista.append(dir_list[files])
+            pygame.mixer.music.set_endevent(MUSIC_END)
+            pygame.mixer.music.load(playlista[liczba_piosenki])
+            nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
+        else:
+            print(f"nie obsługiwany plik {dir_list[files]}")
+        files += 1
+    if len(playlista) == 0:
+        nazwa_pliku_var.set("")
+        msg.showinfo("Zły folder", "Wybierz folder z przynajmniej jednym plikiem mp3")
+    for plik in playlista:
+        trv.insert("", tk.END, values=plik)
+
 
 liczba_piosenki = 0
 liczba_piosenki_nazwy_pliku = 0
@@ -84,10 +103,10 @@ def unpauza():
     buton.configure(text=" II ", command=pauza)
 
 
-MUSIC_END = pygame.USEREVENT
-pygame.mixer.music.set_endevent(MUSIC_END)
-pygame.mixer.music.load(playlista[liczba_piosenki])
-nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
+# MUSIC_END = pygame.USEREVENT
+# pygame.mixer.music.set_endevent(MUSIC_END)
+# pygame.mixer.music.load(playlista[liczba_piosenki])
+# nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
 
 
 def klikniecie_listy(event):
@@ -119,10 +138,7 @@ trv.bind("<<TreeviewSelect>>", klikniecie_listy)
 trv.grid(row=0, column=1, padx=10, pady=10)
 
 trv.heading("utwor", text="Tytuł")
-liczba_plikow = 1
-for plik in playlista:
-    trv.insert("", tk.END, values=plik)
-    liczba_plikow += 1
+
 
 nazwa_pliku = tk.CTkLabel(app, textvariable=nazwa_pliku_var)
 nazwa_pliku.grid(row=1, column=1)
@@ -130,6 +146,8 @@ buton = tk.CTkButton(app, text="►", command=zagraj, width=20, height=30)
 buton.grid(row=0, column=0)
 petla = tk.CTkCheckBox(app, text="Loop", variable=checkbox_var, onvalue=1, offvalue=0)
 petla.grid(row=0, column=1)
+folder = tk.CTkButton(app, text="Wybierz folder", command=wybierz_folder)
+folder.grid(row=0, column=3)
 
 check_event()
 

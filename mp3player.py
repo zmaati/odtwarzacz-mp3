@@ -24,6 +24,10 @@ playlista = []
 MUSIC_END = pygame.USEREVENT
 
 
+liczba_piosenki = 0
+liczba_piosenki_nazwy_pliku = 0
+
+
 def wybierz_folder():
     pygame.mixer.music.stop()
     pygame.mixer.music.unload()
@@ -51,18 +55,21 @@ def wybierz_folder():
         trv.insert("", tk.END, values=plik)
 
 
-liczba_piosenki = 0
-liczba_piosenki_nazwy_pliku = 0
-
-
 def kolejna_piosenka():
     global liczba_piosenki, liczba_piosenki_nazwy_pliku
-    pygame.mixer.music.stop()
-    pygame.mixer.music.unload()
-    pygame.mixer.music.load(playlista[liczba_piosenki])
-    zagraj()
     liczba_piosenki += 1
     liczba_piosenki_nazwy_pliku += 1
+    # pygame.mixer.music.stop()
+    pygame.mixer.music.unload()
+    try:
+        pygame.mixer.music.load(playlista[liczba_piosenki])
+    except IndexError:
+        print("koniec listy")
+        liczba_piosenki = 0
+        liczba_piosenki_nazwy_pliku = 0
+    finally:
+        pygame.mixer.music.load(playlista[liczba_piosenki])
+        zagraj()
 
 
 checkbox_var = tk.IntVar()
@@ -89,6 +96,22 @@ def check_event():
 
 
 gra = 0
+
+
+def next_song():
+    kolejna_piosenka()
+    nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
+    print("dziala kolejna piosenka")
+
+
+def previous_song():
+    global liczba_piosenki, liczba_piosenki_nazwy_pliku
+    liczba_piosenki -= 1
+    liczba_piosenki_nazwy_pliku -= 1
+    pygame.mixer.music.unload()
+    pygame.mixer.music.load(playlista[liczba_piosenki])
+    nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
+    zagraj()
 
 
 def pauza():
@@ -144,12 +167,18 @@ nazwa_pliku = tk.CTkLabel(app, textvariable=nazwa_pliku_var)
 nazwa_pliku.grid(row=1, column=1)
 buton = tk.CTkButton(app, text="►", command=zagraj, width=20, height=30)
 buton.grid(row=0, column=0)
+next = tk.CTkButton(app, text="⏭️", command=next_song, width=20, height=30)
+next.grid(row=1, column=0)
+previous = tk.CTkButton(app, text="⏮️", command=previous_song, width=20, height=30)
+previous.grid(row=2, column=0)
 petla = tk.CTkCheckBox(app, text="Loop", variable=checkbox_var, onvalue=1, offvalue=0)
 petla.grid(row=0, column=1)
 folder = tk.CTkButton(app, text="Wybierz folder", command=wybierz_folder)
 folder.grid(row=0, column=3)
 
 check_event()
+
+# SLIDER GŁOŚNOŚCI
 
 a = 1
 

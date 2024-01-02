@@ -109,9 +109,15 @@ def previous_song():
     liczba_piosenki -= 1
     liczba_piosenki_nazwy_pliku -= 1
     pygame.mixer.music.unload()
-    pygame.mixer.music.load(playlista[liczba_piosenki])
-    nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
-    zagraj()
+    try:
+        pygame.mixer.music.load(playlista[liczba_piosenki])
+    except IndexError:
+        print("koniec listy")
+        liczba_piosenki = -1
+        liczba_piosenki_nazwy_pliku = 0
+    finally:
+        pygame.mixer.music.load(playlista[liczba_piosenki])
+        zagraj()
 
 
 def pauza():

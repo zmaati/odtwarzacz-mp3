@@ -3,6 +3,8 @@ from tkinter import ttk, filedialog
 from tkinter import messagebox as msg
 import pygame
 import os
+from mutagen.mp3 import MP3
+from math import floor
 
 app = tk.CTk()
 app.geometry("850x450")
@@ -31,7 +33,7 @@ liczba_piosenki_nazwy_pliku = 0
 def wybierz_folder():
     pygame.mixer.music.stop()
     pygame.mixer.music.unload()
-    buton.configure(text="►", command=zagraj)
+    zagraj_przycisk.configure(text="►", command=zagraj)
     dir_path = filedialog.askdirectory(title="Wybierz folder")
     for plik in trv.get_children():
         trv.delete(plik)
@@ -55,6 +57,10 @@ def wybierz_folder():
         trv.insert("", tk.END, values=plik)
 
 
+liczba_piosenki = 0
+liczba_piosenki_nazwy_pliku = 0
+
+
 def kolejna_piosenka():
     global liczba_piosenki, liczba_piosenki_nazwy_pliku
     liczba_piosenki += 1
@@ -76,6 +82,7 @@ checkbox_var = tk.IntVar()
 
 
 def check_event():
+    global checkbox_var_final
     for event in pygame.event.get():
         if event.type == MUSIC_END:
             running = True
@@ -86,16 +93,13 @@ def check_event():
             elif checkbox_var_final == 0:
                 while running:
                     if len(playlista) > 0:
-                        # buton.configure(text="►", command=zagraj)
+                        # zagraj_przycisk.configure(text="►", command=zagraj)
                         kolejna_piosenka()
                         nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
                         running = False
             print("aaa")
 
     app.after(1, check_event)
-
-
-gra = 0
 
 
 def next_song():
@@ -108,12 +112,13 @@ def previous_song():
     global liczba_piosenki, liczba_piosenki_nazwy_pliku
     liczba_piosenki -= 1
     liczba_piosenki_nazwy_pliku -= 1
+    nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
     pygame.mixer.music.unload()
     try:
         pygame.mixer.music.load(playlista[liczba_piosenki])
     except IndexError:
         print("koniec listy")
-        liczba_piosenki = -1
+        liczba_piosenki = 0
         liczba_piosenki_nazwy_pliku = 0
     finally:
         pygame.mixer.music.load(playlista[liczba_piosenki])
@@ -121,42 +126,88 @@ def previous_song():
 
 
 def pauza():
-    global gra
     pygame.mixer.music.pause()
-    gra = 2
-    buton.configure(text="►", command=unpauza)
+    zagraj_przycisk.configure(text="►", command=unpauza)
 
 
 def unpauza():
     pygame.mixer.music.unpause()
-    buton.configure(text=" II ", command=pauza)
+    zagraj_przycisk.configure(text=" II ", command=pauza)
 
 
-# MUSIC_END = pygame.USEREVENT
-# pygame.mixer.music.set_endevent(MUSIC_END)
+MUSIC_END = pygame.USEREVENT
+pygame.mixer.music.set_endevent(MUSIC_END)
 # pygame.mixer.music.load(playlista[liczba_piosenki])
 # nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
 
 
 def klikniecie_listy(event):
-    global liczba_piosenki, liczba_piosenki_nazwy_pliku
+    global liczba_piosenki, liczba_piosenki_nazwy_pliku, checkbox_var_final, checkbox_var
     selected_item = trv.selection()[0]
     index = trv.index(selected_item)
+    # checkbox_var = 0
+    # checkbox_var_final = 0
     print(index)
     liczba_piosenki_nazwy_pliku = index
     liczba_piosenki = index
+    # liczba_piosenki_nazwy_pliku -= 1
+    # liczba_piosenki -= 1
     nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
-    pygame.mixer.music.stop()
+    # pygame.mixer.music.stop()
     pygame.mixer.music.unload()
     pygame.mixer.music.load(playlista[liczba_piosenki])
     zagraj()
 
 
 def zagraj():
-    global gra
     pygame.mixer.music.play()
-    buton.configure(text=" II ", command=pauza)
+    zagraj_przycisk.configure(text=" II ", command=pauza)
     print(playlista)
+    audio = MP3(playlista[liczba_piosenki])
+
+    dlugosc_sekundy = audio.info.length
+    print(dlugosc_sekundy)
+
+    if dlugosc_sekundy < 10:
+        dlugosc_sekundy = round(dlugosc_sekundy)
+        dlugosc_sekundy = str(dlugosc_sekundy)
+        tk.CTkLabel(app, text="00:0" + dlugosc_sekundy[0]).place(x=150, y=150)
+    elif dlugosc_sekundy > 10 and dlugosc_sekundy < 100:
+        dlugosc_sekundy = round(dlugosc_sekundy)
+        dlugosc_sekundy = str(dlugosc_sekundy)
+        tk.CTkLabel(app, text="00:" + dlugosc_sekundy).place(x=150, y=150)
+    elif dlugosc_sekundy > 100 and dlugosc_sekundy < 590:
+        round(dlugosc_sekundy)
+        dlugosc_minuty = dlugosc_sekundy / 60
+        dlugosc_minuty = floor(dlugosc_minuty)
+        dlugosc_sekundy = dlugosc_sekundy - (dlugosc_minuty * 60)
+        dlugosc_sekundy = str(dlugosc_sekundy)
+        dlugosc_minuty = str(dlugosc_minuty)
+        tk.CTkLabel(
+            app,
+            text="0"
+            + dlugosc_minuty[0]
+            + ":"
+            + dlugosc_sekundy[0]
+            + dlugosc_sekundy[1],
+        ).place(x=150, y=150)
+    elif dlugosc_sekundy > 590:
+        dlugosc_minuty = dlugosc_sekundy / 60
+        dlugosc_minuty = floor(dlugosc_minuty)
+        dlugosc_sekundy = dlugosc_sekundy - (dlugosc_minuty * 60)
+        floor(dlugosc_sekundy)
+        dlugosc_sekundy = str(dlugosc_sekundy)
+        dlugosc_minuty = str(dlugosc_minuty)
+        print(dlugosc_minuty, "EGIOGJSKGJP")
+        print(dlugosc_sekundy, "AAAAAAAAAAAAAA")
+        tk.CTkLabel(
+            app,
+            text=dlugosc_minuty[0]
+            + dlugosc_minuty[1]
+            + ":"
+            + dlugosc_sekundy[0]
+            + dlugosc_sekundy[1],
+        ).place(x=150, y=150)
 
 
 trv = ttk.Treeview(
@@ -171,14 +222,14 @@ trv.heading("utwor", text="Tytuł")
 
 nazwa_pliku = tk.CTkLabel(app, textvariable=nazwa_pliku_var)
 nazwa_pliku.grid(row=1, column=1)
-buton = tk.CTkButton(app, text="►", command=zagraj, width=20, height=30)
-buton.grid(row=0, column=0)
+zagraj_przycisk = tk.CTkButton(app, text="►", command=zagraj, width=20, height=30)
+zagraj_przycisk.place(x=150, y=200)
 next = tk.CTkButton(app, text="⏭️", command=next_song, width=20, height=30)
-next.grid(row=1, column=0)
+next.place(x=180, y=200)
 previous = tk.CTkButton(app, text="⏮️", command=previous_song, width=20, height=30)
-previous.grid(row=2, column=0)
+previous.place(x=113, y=200)
 petla = tk.CTkCheckBox(app, text="Loop", variable=checkbox_var, onvalue=1, offvalue=0)
-petla.grid(row=0, column=1)
+petla.place(x=220, y=204)
 folder = tk.CTkButton(app, text="Wybierz folder", command=wybierz_folder)
 folder.grid(row=0, column=3)
 

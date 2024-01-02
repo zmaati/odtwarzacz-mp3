@@ -1,1 +1,3 @@
-**Rizzler - Program do odtwarzania muzyki**
+**Drizzler - Program do odtwarzania muzyki**
+
+Program sł

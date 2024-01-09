@@ -1,8 +1,11 @@
 import customtkinter as tk
 from tkinter import ttk, filedialog
 from tkinter import messagebox as msg
-import pygame
+
 import os
+
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
+import pygame
 from mutagen.mp3 import MP3
 from math import floor
 import time
@@ -14,6 +17,7 @@ app.grid_columnconfigure(0, weight=1)
 app.grid_rowconfigure(0, weight=1)
 app.title("Drizzler")
 app.iconbitmap("logo.ico")
+tk.set_appearance_mode("dark")
 
 nazwa_pliku_var = tk.StringVar()
 columns = "utwor"
@@ -62,6 +66,7 @@ def wybierz_folder():
     for plik in playlista:
         trv.insert("", tk.END, values=plik)
 
+
 liczba_piosenki = 0
 liczba_piosenki_nazwy_pliku = 0
 
@@ -76,7 +81,6 @@ def kolejna_piosenka():
     try:
         pygame.mixer.music.load(playlista[liczba_piosenki])
     except IndexError:
-        print("koniec listy")
         liczba_piosenki = 0
         liczba_piosenki_nazwy_pliku = 0
     finally:
@@ -87,24 +91,22 @@ def kolejna_piosenka():
 checkbox_var = tk.IntVar()
 
 
-
 def check_event():
     global checkbox_var_final
     for event in pygame.event.get():
         if event.type == MUSIC_END:
             running = True
             checkbox_var_final = checkbox_var.get()
-            print(checkbox_var_final)
+            # print(checkbox_var_final)
             if checkbox_var_final == 1:
                 zagraj()
-            elif checkbox_var_final     == 0:
+            elif checkbox_var_final == 0:
                 while running:
                     if len(playlista) > 0:
                         # zagraj_przycisk.configure(text="►", command=zagraj)
                         kolejna_piosenka()
                         nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
                         running = False
-            print("aaa")
 
     app.after(1, check_event)
 
@@ -112,7 +114,6 @@ def check_event():
 def next_song():
     kolejna_piosenka()
     nazwa_pliku_var.set(playlista[liczba_piosenki_nazwy_pliku])
-    print("dziala kolejna piosenka")
 
 
 def previous_song():
@@ -124,7 +125,6 @@ def previous_song():
     try:
         pygame.mixer.music.load(playlista[liczba_piosenki])
     except IndexError:
-        print("koniec listy")
         liczba_piosenki = 0
         liczba_piosenki_nazwy_pliku = 0
     finally:
@@ -154,7 +154,7 @@ def klikniecie_listy(event):
     index = trv.index(selected_item)
     # checkbox_var = 0
     # checkbox_var_final = 0
-    print(index)
+    # print(index)
     liczba_piosenki_nazwy_pliku = index
     liczba_piosenki = index
     # liczba_piosenki_nazwy_pliku -= 1
@@ -164,8 +164,10 @@ def klikniecie_listy(event):
     pygame.mixer.music.unload()
     pygame.mixer.music.load(playlista[liczba_piosenki])
     zagraj()
+
+
 def zagraj():
-    global czas_startu_piosenki, liczba_piosenki,shuffle_checkbox_var
+    global czas_startu_piosenki, liczba_piosenki
     czas_startu_piosenki = time.time()
     pygame.mixer.music.stop()
     pygame.mixer.music.unload()
@@ -177,7 +179,6 @@ def zagraj():
     audio = MP3(playlista[liczba_piosenki])
 
     dlugosc_sekundy = audio.info.length
-    print(dlugosc_sekundy)
 
     if dlugosc_sekundy < 10:
         dlugosc_sekundy = round(dlugosc_sekundy)
@@ -206,21 +207,22 @@ def zagraj():
     pygame.mixer.music.play()
     aktualizuj_timer()
 
+
 czas_startu_piosenki = 0
 timer_var = tk.StringVar()
 timer_var.set("00:00")
 
+
 def aktualizuj_timer():
     global czas_startu_piosenki
-    czas_teraz = time.time()
-    czas_uplyniety = czas_teraz - czas_startu_piosenki
-    czas_uplyniety_minuty = floor(czas_uplyniety / 60)
-    czas_uplyniety_sekundy = round(czas_uplyniety % 60)
-    czas_formatowany = f"{czas_uplyniety_minuty:02d}:{czas_uplyniety_sekundy:02d}"
-    timer_var.set(czas_formatowany)
+    if pygame.mixer.music.get_busy():
+        czas_teraz = time.time()
+        czas_uplyniety = czas_teraz - czas_startu_piosenki
+        czas_uplyniety_minuty = floor(czas_uplyniety / 60)
+        czas_uplyniety_sekundy = round(czas_uplyniety % 60)
+        czas_formatowany = f"{czas_uplyniety_minuty:02d}:{czas_uplyniety_sekundy:02d}"
+        timer_var.set(czas_formatowany)
     app.after(1000, aktualizuj_timer)
-
-
 
 
 def set_music_position(value):
@@ -229,6 +231,7 @@ def set_music_position(value):
     audio = MP3(current_song)
     song_length = audio.info.length
     pygame.mixer.music.set_pos(percentage * song_length)
+
 
 def update_slider_position():
     if pygame.mixer.music.get_busy():
@@ -239,12 +242,16 @@ def update_slider_position():
         percentage = (current_position / song_length) * 100
         dlugosc_slider.set(percentage)
 
-    app.after(1000, update_slider_position)    
-
+    app.after(1000, update_slider_position)
 
 
 trv = ttk.Treeview(
     app, selectmode="browse", height=20, show="headings", columns=columns
+)
+style = ttk.Style()
+style.theme_use("default")
+style.configure(
+    "Treeview", background="#201B1A", foreground="white", fieldbackground="#201B1A"
 )
 trv.bind("<<TreeviewSelect>>", klikniecie_listy)
 
@@ -254,7 +261,7 @@ trv.heading("utwor", text="Tytuł")
 
 
 nazwa_pliku = tk.CTkLabel(app, textvariable=nazwa_pliku_var)
-nazwa_pliku.place(x=200,y=50)
+nazwa_pliku.place(x=100, y=100)
 zagraj_przycisk = tk.CTkButton(app, text="►", command=zagraj, width=20, height=30)
 zagraj_przycisk.place(x=150, y=200)
 next = tk.CTkButton(app, text="⏭️", command=next_song, width=20, height=30)
@@ -275,6 +282,7 @@ check_event()
 
 a = 0.1
 pygame.mixer.music.set_volume(a)
+
 
 def slider_event(value):
     global a
@@ -298,15 +306,16 @@ dlugosc_slider = tk.CTkSlider(
     from_=0,
     to=100,
     orientation="horizontal",
-    fg_color="purple",
-    progress_color="blue",
-    button_color="Purple",
+    width=215,
+    fg_color="#8243D8",
+    progress_color="#AB6EFF",
+    button_color="#8243D8",
     state="disabled",
     command=lambda value: set_music_position(value),
 )
 dlugosc_slider.place(x=495, y=430)
 dlugosc_slider.set(0)
-app.after(1000, update_slider_position)    
+app.after(1000, update_slider_position)
 # W trakcie tworzenia
 # def shuffle_():
 #     global playlista

@@ -225,14 +225,6 @@ def aktualizuj_timer():
     app.after(1000, aktualizuj_timer)
 
 
-def set_music_position(value):
-    percentage = float(value) / 100
-    current_song = playlista[liczba_piosenki]
-    audio = MP3(current_song)
-    song_length = audio.info.length
-    pygame.mixer.music.set_pos(percentage * song_length)
-
-
 def update_slider_position():
     if pygame.mixer.music.get_busy():
         current_position = pygame.mixer.music.get_pos() / 1000  # w sekundach

@@ -213,6 +213,39 @@ def slider_event(value):
     pygame.mixer.music.set_volume(a)
 ```
 
+```aktualizuj_timer()``` - Funkcja, która aktualizuje timer (postęp) odtwarzania muzyki w stosunku do jej długości.
+
+```python
+def aktualizuj_timer():
+    global czas_startu_piosenki
+    if pygame.mixer.music.get_busy():
+        czas_teraz = time.time()
+        czas_uplyniety = czas_teraz - czas_startu_piosenki
+        czas_uplyniety_minuty = floor(czas_uplyniety / 60)
+        czas_uplyniety_sekundy = round(czas_uplyniety % 60)
+        czas_formatowany = f"{czas_uplyniety_minuty:02d}:{czas_uplyniety_sekundy:02d}"
+        timer_var.set(czas_formatowany)
+    app.after(1000, aktualizuj_timer)
+```
+
+```update_slider_position()``` - Funkcja, która ustawia pozycje na pasu postępu podczas odtwarzania muzyki.
+
+```python
+def update_slider_position():
+    if pygame.mixer.music.get_busy():
+        current_position = pygame.mixer.music.get_pos() / 1000  # w sekundach
+        current_song = playlista[liczba_piosenki]
+        audio = MP3(current_song)
+        song_length = audio.info.length
+        percentage = (current_position / song_length) * 100
+        dlugosc_slider.set(percentage)
+
+    app.after(1000, update_slider_position)
+```
+
+
+
+
 ## 5. Autorzy & Źródła
 ```Oprogramowanie``` -> Mateusz Cichosz, Jan Gołębiowski;<br>
 ```Wygląd aplikacji``` -> Piotr Kowalewski;<br>

@@ -6,16 +6,15 @@ Drizzler to aplikacja deskoptowa, dzięki której użytkownik może odtwarzać u
 
 ## 2. Wymagania systemowe
 
+Do poprawnego działania programu należy zaimportować następujące bibliolteki:
 ```
-Python 3.x
 Tkinter
 customtkinter
 pygame
 os
-```
-Użytkownik może również otworzyć terminal w folderze z grą i wpisać następujące polecenie:
-```
-pip install -r requirements.txt
+mutagen
+math
+time
 ```
 
 ## 3. Zmienne
@@ -25,6 +24,8 @@ pip install -r requirements.txt
 ```trv``` - Kolumna z utowrami muzycznymi.
 
 ```columns``` - Nagłówek kolumny z utworami.
+
+
 
 ## 4. Funkcje
 

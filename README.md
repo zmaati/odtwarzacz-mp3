@@ -248,6 +248,5 @@ def update_slider_position():
 
 ## 5. Autorzy & Źródła
 ```Oprogramowanie``` -> Mateusz Cichosz, Jan Gołębiowski;<br>
-```Wygląd aplikacji``` -> Piotr Kowalewski;<br>
 ```Dokumentacja aplikacji``` -> Krystian Tarnowski<br>
 
